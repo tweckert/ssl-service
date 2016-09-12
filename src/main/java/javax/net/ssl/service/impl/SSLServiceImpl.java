@@ -1,6 +1,7 @@
 package javax.net.ssl.service.impl;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -60,7 +61,7 @@ public class SSLServiceImpl implements SSLService, InitializingBean {
 	}
 	
 	@Override
-	public ResponsePojo executeRequest(RequestPojo request) {
+	public ResponsePojo executeRequest(RequestPojo request) throws IOException {
 		
 		ResponsePojo response = null;
 		HttpURLConnection httpConnection = null;
@@ -163,10 +164,7 @@ public class SSLServiceImpl implements SSLService, InitializingBean {
 			
 			response = new ResponsePojo(httpStatus, result.toString(), elapsedTimeMillis);
 		} catch (Exception e) {
-			if (LOG.isErrorEnabled()) {
-				LOG.error(StringUtils.join("Error executing HTTP request: ", e.getMessage()), e);
-			}		
-			response = null;
+			throw new IOException(StringUtils.join("Error executing HTTP request [", toString(request), "]: ", e.getMessage()), e);
 		} finally {
 			
 			IOUtils.closeQuietly(reader);
@@ -288,6 +286,27 @@ public class SSLServiceImpl implements SSLService, InitializingBean {
 			return String.valueOf(urlEncoded);
 		}
 		
+	}
+	
+	protected String toString(RequestPojo request) {
+		
+		StringBuffer buf = new StringBuffer();
+		
+		buf.append("URL: '").append(buildUrl(request)).append("'");
+		
+		// request parameters
+		buf.append(", request parameters: {");
+		Iterator<Map.Entry<String, String>> i = request.getParameters().entrySet().iterator();
+		while (i.hasNext()) {
+			Map.Entry<String, String> entry = i.next();
+			buf.append("'").append(entry.getKey()).append("'='").append(entry.getValue()).append("'");
+			if (i.hasNext()) {
+				buf.append(", ");
+			}
+		}
+		buf.append("}");
+		
+		return buf.toString();
 	}
 
 }

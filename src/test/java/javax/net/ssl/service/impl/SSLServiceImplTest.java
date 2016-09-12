@@ -1,5 +1,6 @@
 package javax.net.ssl.service.impl;
 
+import java.io.IOException;
 import java.util.Collections;
 
 import javax.net.ssl.pojo.RequestPojo;
@@ -24,7 +25,7 @@ public class SSLServiceImplTest {
 	@Autowired private SSLService sslService;
 	
 	@Test
-	public void testExecutePostRequest() {
+	public void testExecutePostRequest() throws Exception {
 		
 		// GIVEN
 		RequestPojo request = new RequestPojo(RequestPojo.Method.POST, RequestPojo.Protocol.HTTPS, "httpbin.org", 80, "/post", Collections.singletonMap("someParam", "someValue"));
@@ -42,7 +43,25 @@ public class SSLServiceImplTest {
 	}
 	
 	@Test
-	public void testExecuteGetRequest() {
+	public void testExecutePostRequestFails() throws Exception {
+		
+		// GIVEN
+		RequestPojo request = new RequestPojo(RequestPojo.Method.POST, RequestPojo.Protocol.HTTPS, "www.bundesregierung.de", 80, "/post", Collections.singletonMap("someParam", "someValue"));
+		
+		// WHEN
+		boolean hasSSLException = false;
+		try {
+			sslService.executeRequest(request);
+		} catch (IOException e) {
+			hasSSLException = javax.net.ssl.SSLHandshakeException.class.isAssignableFrom(e.getCause().getClass());
+		}
+		
+		// THEN
+		Assert.assertTrue(hasSSLException);
+	}
+	
+	@Test
+	public void testExecuteGetRequest() throws Exception {
 		
 		// GIVEN
 		RequestPojo request = new RequestPojo(RequestPojo.Method.GET, RequestPojo.Protocol.HTTPS, "httpbin.org", 80, "/get", Collections.singletonMap("someParam", "someValue"));

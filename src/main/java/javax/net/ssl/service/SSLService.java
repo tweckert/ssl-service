@@ -1,5 +1,7 @@
 package javax.net.ssl.service;
 
+import java.io.IOException;
+
 import javax.net.ssl.pojo.RequestPojo;
 import javax.net.ssl.pojo.ResponsePojo;
 
@@ -8,6 +10,6 @@ import javax.net.ssl.pojo.ResponsePojo;
  */
 public interface SSLService {
 
-	ResponsePojo executeRequest(RequestPojo request);
+	ResponsePojo executeRequest(RequestPojo request) throws IOException;
 	
 }
